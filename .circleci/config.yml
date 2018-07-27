@@ -58,12 +58,28 @@ jobs:
 
 workflows:
   version: 2
-  main:
+  buildtest:
     jobs:
       - build
       - test:
           requires:
             - build
+  release:
+    jobs:
+      - build
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore: /.*/
+      - test:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore: /.*/
       - publish-github-release:
           requires:
             - build
