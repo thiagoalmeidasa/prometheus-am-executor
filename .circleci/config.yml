@@ -31,6 +31,10 @@ jobs:
       - attach_workspace:
           at: /go/src/github.com/thiagoalmeidasa/prometheus-am-executor
       - run:
+          name: Install curl
+          command: |
+            apk --no-cache add curl
+      - run:
           name: Run tests
           command: sh ./integration_tests.sh
       - persist_to_workspace:
@@ -46,10 +50,6 @@ jobs:
     steps:
       - attach_workspace:
           at: /go/src/github.com/thiagoalmeidasa/prometheus-am-executor
-      - run:
-          name: Install curl
-          command: |
-            apk --no-cache add curl
       - run:
           name: "Publish Release on GitHub"
           command: |
