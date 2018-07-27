@@ -19,7 +19,9 @@ jobs:
             go build -a -installsuffix cgo -ldflags '-s -w -extld ld -extldflags -static'
       - persist_to_workspace:
           root: .
-          paths: prometheus-am-executor
+          paths:
+            - prometheus-am-executor
+            - integration_tests.sh
 
   test:
     docker:
@@ -33,7 +35,9 @@ jobs:
           command: sh ./integration_tests.sh
       - persist_to_workspace:
           root: .
-          paths: prometheus-am-executor
+          paths:
+            - prometheus-am-executor
+            - integration_tests.sh
 
   publish-github-release:
     docker:
@@ -46,7 +50,7 @@ jobs:
           command: |
             VERSION=$(prometheus-am-executor --version)
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} prometheus-am-executor
-            
+
 workflows:
   version: 2
   main:
