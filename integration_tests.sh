@@ -5,7 +5,7 @@ readonly ALERT_EXAMPLE='{"receiver":"default","status":"firing","alerts":[{"stat
 TMPFILE=$(mktemp)
 
 echo "Testing basic command execution, logging to $TMPFILE"
-./prometheus-am-executor bash -c 'env' > "$TMPFILE" 2>&1 &
+./prometheus-am-executor sh -c 'env' > "$TMPFILE" 2>&1 &
 PID=$!
 sleep 1
 trap "kill $PID; rm '$TMPFILE'" EXIT
