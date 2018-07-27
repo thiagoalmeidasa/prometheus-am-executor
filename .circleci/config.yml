@@ -47,6 +47,10 @@ jobs:
       - attach_workspace:
           at: /go/src/github.com/thiagoalmeidasa/prometheus-am-executor
       - run:
+          name: Install curl
+          command: |
+            apk --no-cache curl
+      - run:
           name: "Publish Release on GitHub"
           command: |
             VERSION=$(prometheus-am-executor --version)
