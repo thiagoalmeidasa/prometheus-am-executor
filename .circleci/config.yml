@@ -1,0 +1,66 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: golang:1.9-alpine
+    working_directory: /go/src/github.com/thiagoalmeidasa/prometheus-am-executor
+    steps:
+      - checkout
+      - run:
+          name: Install deps
+          command: |
+            apk --no-cache --virtual .build-deps add go git openssh \
+            && go get -u github.com/prometheus/alertmanager/... \
+            && go get -u github.com/prometheus/client_golang/...
+      - run:
+          name: Build project
+          command: |
+            CGO_ENABLED=0 GOARCH=amd64 GOOS=linux \
+            go build -a -installsuffix cgo -ldflags '-s -w -extld ld -extldflags -static'
+      - persist_to_workspace:
+          root: .
+          paths: prometheus-am-executor
+
+  test:
+    docker:
+      - image: golang:1.9-alpine
+    working_directory: /go/src/github.com/thiagoalmeidasa/prometheus-am-executor
+    steps:
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Run tests
+          command: sh ./integration_tests.sh
+      - persist_to_workspace:
+          root: .
+          paths: prometheus-am-executor
+
+  publish-github-release:
+    docker:
+      - image: cibuilds/github:0.10
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: "Publish Release on GitHub"
+          command: |
+            VERSION=$(prometheus-am-executor --version)
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} prometheus-am-executor
+            
+workflows:
+  version: 2
+  main:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
+      - publish-github-release:
+          requires:
+            - build
+            - test
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^\d+\.\d+\.\d+$/
